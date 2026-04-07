@@ -9,21 +9,15 @@ interface Part {
   exercises: number;
 }
 
-interface ContentProps {
-  part1: Part;
-  part2: Part;
-  part3: Part;
-}
-
 interface PartProps {
-  part: Part;
+  parts: Part[];
 }
 
 const Header = ({ course }: { course: string }) => {
   return <h1>{course}</h1>;
 };
 
-const Part = ({ part }: PartProps) => {
+const Part = ({ part }: { part: Part }) => {
   return (
     <p>
       {part.name} {part.exercises}
@@ -31,44 +25,42 @@ const Part = ({ part }: PartProps) => {
   );
 };
 
-const Content = ({ part1, part2, part3 }: ContentProps) => {
+const Content = ({ parts }: PartProps) => {
   return (
     <>
-      <Part part={part1} />
-      <Part part={part2} />
-      <Part part={part3} />
+      <Part part={parts[0]} />
+      <Part part={parts[1]} />
+      <Part part={parts[2]} />
     </>
   );
 };
 
-const Total = ({ exercises1, exercises2, exercises3 }: ExercisesProps) => {
-  return <p>Number of exercises {exercises1 + exercises2 + exercises3}</p>;
+const Total = ({ parts }: PartProps) => {
+  const total = parts[0].exercises + parts[1].exercises + parts[2].exercises;
+  return <p>Number of exercises {total}</p>;
 };
 
 const App = () => {
   const course = "Half Stack application development";
-  const part1 = {
-    name: "Fundamentals of React",
-    exercises: 10,
-  };
-  const part2 = {
-    name: "Using props to pass data",
-    exercises: 7,
-  };
-  const part3 = {
-    name: "State of a component",
-    exercises: 14,
-  };
-
+  const parts = [
+    {
+      name: "Fundamentals of React",
+      exercises: 10,
+    },
+    {
+      name: "Using props to pass data",
+      exercises: 7,
+    },
+    {
+      name: "State of a component",
+      exercises: 14,
+    },
+  ];
   return (
     <div>
       <Header course={course} />
-      <Content part1={part1} part2={part2} part3={part3} />
-      <Total
-        exercises1={part1.exercises}
-        exercises2={part2.exercises}
-        exercises3={part3.exercises}
-      />
+      <Content parts={parts} />
+      <Total parts={parts} />
     </div>
   );
 };
