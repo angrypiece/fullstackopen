@@ -1,35 +1,28 @@
-interface Person {
-  name: string;
-  age: number;
-}
+import { useState } from "react";
 
-interface HelloProps {
-  friend: Person;
-}
+const Display = (props: { counter: number }) => {
+  return <div>{props.counter}</div>;
+};
 
-const Hello = ({ friend }: HelloProps) => {
-  console.log(friend);
-  return (
-    <div>
-      <p>
-        Hello {friend.name} {friend.age} years old
-      </p>
-    </div>
-  );
+const Button = (props: { onClick: () => void; text: string }) => {
+  return <button onClick={props.onClick}>{props.text}</button>;
 };
 
 const App = () => {
-  const friends = [
-    { name: "Jack", age: 33 },
-    { name: "John", age: 22 },
-  ];
+  const [counter, setCounter] = useState(0);
+
+  const increaseByOne = () => setCounter(counter + 1);
+  const decreaseByOne = () => setCounter(counter - 1);
+  const setToZero = () => setCounter(0);
 
   return (
     <div>
-      <h1>Greetings</h1>
-      <Hello friend={friends[0]} />
-      <Hello friend={friends[1]} />
+      <Display counter={counter} />
+      <Button onClick={increaseByOne} text="plus" />
+      <Button onClick={setToZero} text="zero" />
+      <Button onClick={decreaseByOne} text="minus" />
     </div>
   );
 };
+
 export default App;
