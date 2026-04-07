@@ -1,4 +1,7 @@
 # fullstackopen
+
+4/7/2026: Completed part 1
+
 | Exercises | Credits | Grade | Done |   |
 |-----------|---------|-------|------|---|
 | 150       | 7       | 5     | []   |   |
