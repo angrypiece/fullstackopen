@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import Note from "./components/Note";
-import type { NoteType } from "./types";
-import axios from "axios";
+import type { NewNote, NoteType } from "./types";
+import noteService from "./services/notes.js";
 
 const App = () => {
   const [notes, setNotes] = useState<NoteType[]>([]);
@@ -9,21 +9,22 @@ const App = () => {
   const [showAll, setShowAll] = useState(true);
 
   useEffect(() => {
-    axios.get("http://localhost:3001/notes").then((res) => {
-      setNotes(res.data);
-    });
+    noteService
+      .getAll()
+      .then((initialNotes: NoteType[]) => setNotes(initialNotes));
   }, []);
 
   const addNote = (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    const noteObject = {
+    const newNoteObject: NewNote = {
       content: newNote,
+      // eslint-disable-next-line react-hooks/purity
       important: Math.random() > 0.5,
     };
 
-    axios.post("http://localhost:3001/notes", noteObject).then((res) => {
-      setNotes(notes.concat(res.data));
+    noteService.create(newNoteObject).then((addedNote: NoteType) => {
+      setNotes(notes.concat(addedNote));
       setNewNote("");
     });
   };
@@ -33,16 +34,24 @@ const App = () => {
     setNewNote(e.target.value);
   };
 
-  const toggleImportance = (id: number) => {
+  const toggleImportance = (id: string) => {
     const note = notes.find((n) => n.id === id);
 
-    if (!note) return 
+    if (!note) return;
 
-    const changedNote = { ...note, important: !note.important };
+    const changedNote: NoteType = { ...note, important: !note.important };
 
-    axios.put(`http://localhost:3001/notes/${id}`, changedNote).then((res) => {
-      setNotes(notes.map((n) => (n.id === id ? res.data : n)));
-    });
+    noteService
+      .update(changedNote.id, changedNote)
+      .then((updatedNote: NoteType) => {
+        setNotes(notes.map((note) => (note.id === id ? updatedNote : note)));
+      })
+      .catch((err: unknown) => {
+        if (err instanceof Error) {
+          alert(`the note ${note.content} was already deleted from server`);
+          setNotes(notes.filter((n) => n.id !== id));
+        }
+      });
   };
 
   const notesToShow = showAll ? notes : notes.filter((n) => n.important);
