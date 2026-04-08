@@ -5,7 +5,7 @@ interface HeaderProps {
 }
 
 const Header = ({ name }: HeaderProps) => {
-  return <h1>{name}</h1>;
+  return <h2>{name}</h2>;
 };
 
 interface PartProps {
@@ -34,7 +34,11 @@ const Content = ({ parts }: ContentProps) => {
   );
 };
 
-const Total = ({ parts }: { parts: Part[] }) => {
+interface TotalProps {
+  parts: Part[];
+}
+
+const Total = ({ parts }: TotalProps) => {
   const total = parts.reduce((sum, part) => sum + part.exercises, 0);
   return (
     <p>
