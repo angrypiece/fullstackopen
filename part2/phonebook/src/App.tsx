@@ -1,36 +1,73 @@
 import React, { useState } from "react";
 
+type Person = {
+  name: string;
+  number: string;
+};
+
 const App = () => {
-  const [persons, setPersons] = useState([{ name: "Arto Hellas" }]);
-  const [newName, setNewName] = useState("");
+  const [persons, setPersons] = useState<Person[]>([
+    { name: "Arto Hellas", number: "040-1234567" },
+  ]);
+  const [newPerson, setNewPerson] = useState<Person>({
+    name: "",
+    number: "",
+  });
+  const [filter, setFilter] = useState("");
 
   const addPerson = (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    const nameExists = persons
-      .map((p) => p.name.toLowerCase())
-      .includes(newName.toLowerCase());
+    const nameExists = persons.some(
+      (p) =>
+        p.name.toLowerCase().trim() === newPerson.name.toLowerCase().trim(),
+    );
 
     if (nameExists) {
-      alert(`${newName} already exists in phonebook!`)
-      return
+      alert(`${newPerson.name} already exists in phonebook!`);
+      return;
     }
 
-    setPersons(persons.concat({ name: newName }));
-    setNewName("");
+    setPersons((prev) => prev.concat(newPerson));
+    setNewPerson({ name: "", number: "" });
   };
 
-  const changeName = (e: React.ChangeEvent<HTMLInputElement>) => {
-    e.preventDefault();
-    setNewName(e.target.value);
+  const changePerson = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setNewPerson((prev) => ({ ...prev, [name]: value }));
   };
+
+  const filteredPersons = persons.filter((person) =>
+    person.name.trim().toLowerCase().includes(filter.trim().toLowerCase()),
+  );
 
   return (
     <div>
       <h2>Phonebook</h2>
+      <input
+        type="text"
+        value={filter}
+        onChange={(e) => setFilter(e.target.value)}
+      />
+      <h2>add a new</h2>
       <form onSubmit={addPerson}>
         <div>
-          name: <input type="text" value={newName} onChange={changeName} />
+          name:{" "}
+          <input
+            name="name"
+            type="text"
+            value={newPerson.name}
+            onChange={changePerson}
+          />
+        </div>
+        <div>
+          number:{" "}
+          <input
+            name="number"
+            type="tel"
+            value={newPerson.number}
+            onChange={changePerson}
+          />
         </div>
         <div>
           <button type="submit">add</button>
@@ -38,8 +75,12 @@ const App = () => {
       </form>
       <h2>Numbers</h2>
       <ul>
-        {persons.map((person) => {
-          return <li>{person.name}</li>;
+        {filteredPersons.map((person) => {
+          return (
+            <li key={person.name}>
+              {person.name} ({person.number})
+            </li>
+          );
         })}
       </ul>
     </div>
