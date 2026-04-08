@@ -1,11 +1,18 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Note from "./components/Note";
 import type { NoteType } from "./types";
+import axios from "axios";
 
-const App = (props: { notes: NoteType[] }) => {
-  const [notes, setNotes] = useState<NoteType[]>(props.notes);
+const App = () => {
+  const [notes, setNotes] = useState<NoteType[]>([]);
   const [newNote, setNewNote] = useState("");
   const [showAll, setShowAll] = useState(true);
+
+  useEffect(() => {
+    axios.get("http://localhost:3001/notes").then((res) => {
+      setNotes(res.data);
+    });
+  }, []);
 
   const addNote = (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
