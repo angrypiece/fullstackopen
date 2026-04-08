@@ -20,11 +20,12 @@ const App = () => {
     const noteObject = {
       content: newNote,
       important: Math.random() > 0.5,
-      id: notes.length + 1,
     };
 
-    setNotes(notes.concat(noteObject));
-    setNewNote("");
+    axios.post("http://localhost:3001/notes", noteObject).then((res) => {
+      setNotes(notes.concat(res.data));
+      setNewNote("");
+    });
   };
 
   const handleNoteChange = (e: React.ChangeEvent<HTMLInputElement>) => {
