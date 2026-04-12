@@ -13,7 +13,7 @@ const Persons = ({ filteredPersons, onDelete }: PersonsProps) => {
           return (
             <li key={person.name}>
               {person.name} ({person.number})
-              <button onClick={onDelete}>delete</button>
+              <button onClick={() => onDelete(person.id)}>delete</button>
             </li>
           );
         })}
