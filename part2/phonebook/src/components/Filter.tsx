@@ -1,9 +1,9 @@
 import type React from "react";
 
-type FilterProps = {
+interface FilterProps {
   filter: string;
   onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-};
+}
 
 const Filter = ({ filter, onChange }: FilterProps) => {
   return (

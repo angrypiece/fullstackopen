@@ -2,9 +2,10 @@ import type { Person } from "../types";
 
 interface PersonsProps {
   filteredPersons: Person[];
+  onDelete: (id: string) => void;
 }
 
-const Persons = ({ filteredPersons }: PersonsProps) => {
+const Persons = ({ filteredPersons, onDelete }: PersonsProps) => {
   return (
     <div>
       <ul>
@@ -12,6 +13,7 @@ const Persons = ({ filteredPersons }: PersonsProps) => {
           return (
             <li key={person.name}>
               {person.name} ({person.number})
+              <button onClick={onDelete}>delete</button>
             </li>
           );
         })}

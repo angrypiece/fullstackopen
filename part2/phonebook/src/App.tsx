@@ -1,44 +1,89 @@
 import React, { useEffect, useState } from "react";
 import Filter from "./components/Filter";
-import type { Person } from "./types";
+import type { NewPerson, Person } from "./types";
 import PersonForm from "./components/PersonForm";
 import Persons from "./components/Persons";
-import axios from "axios";
+import personService from "./services/persons";
 
 const App = () => {
   const [persons, setPersons] = useState<Person[]>([]);
-  const [newPerson, setNewPerson] = useState<Person>({
+  const [newPerson, setNewPerson] = useState<NewPerson>({
     name: "",
     number: "",
   });
   const [filter, setFilter] = useState("");
 
   useEffect(() => {
-    axios.get("http://localhost:3001/persons").then((res) => {
-      setPersons(res.data);
+    personService.getAll().then((persons) => {
+      setPersons(persons);
     });
   }, []);
 
   const addPerson = (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    const nameExists = persons.some(
-      (p) =>
-        p.name.toLowerCase().trim() === newPerson.name.toLowerCase().trim(),
+    const foundPerson = persons.find(
+      (persons) =>
+        persons.name.trim().toLowerCase() ===
+        newPerson.name.trim().toLowerCase(),
     );
 
-    if (nameExists) {
-      alert(`${newPerson.name} already exists in phonebook!`);
-      return;
+    if (foundPerson) {
+      const isConfirmed = confirm(
+        `${foundPerson.name} already exists in phonebook! Do you want to update`,
+      );
+      if (isConfirmed) {
+        updatePerson(foundPerson);
+        return;
+      }
     }
 
-    setPersons((prev) => prev.concat(newPerson));
-    setNewPerson({ name: "", number: "" });
+    const newPersonObject = {
+      name: newPerson.name,
+      number: newPerson.number,
+    };
+
+    personService.addNew(newPersonObject).then((addedPerson) => {
+      setPersons((prev) => prev.concat(addedPerson));
+      setNewPerson({ name: "", number: "" });
+    });
+  };
+
+  const updatePerson = (personToUpdate: Person) => {
+    const updatedPersonObject = { ...personToUpdate, number: newPerson.number };
+
+    personService.update(updatedPersonObject).then((updatedPerson: Person) => {
+      setPersons(
+        persons.map((person) => {
+          if (person.id === updatedPerson.id) {
+            return updatedPerson;
+          } else {
+            return person;
+          }
+        }),
+      );
+      setNewPerson({ name: "", number: "" });
+    });
   };
 
   const handlePersonChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setNewPerson((prev) => ({ ...prev, [name]: value }));
+    if (name === "name" || name === "number") {
+      setNewPerson((prev: NewPerson) => ({ ...prev, [name]: value }));
+    }
+  };
+
+  const handlePersonDelete = (id: string) => {
+    const person = persons.find((p) => p.id === id);
+    if (!person) return;
+    const confirm = window.confirm(`Delete ${person.name})`);
+    if (confirm && person) {
+      personService.remove(person.id).then((deletedPerson: Person) => {
+        setPersons(
+          persons.filter((oldPerson) => oldPerson.id !== deletedPerson.id),
+        );
+      });
+    }
   };
 
   const filteredPersons = persons.filter((person) =>
@@ -49,14 +94,19 @@ const App = () => {
     <div>
       <h2>Phonebook</h2>
       <Filter filter={filter} onChange={(e) => setFilter(e.target.value)} />
+
       <h3>add a new</h3>
       <PersonForm
         onChange={handlePersonChange}
         onSubmit={addPerson}
         newPerson={newPerson}
       />
+
       <h3>Numbers</h3>
-      <Persons filteredPersons={filteredPersons} />
+      <Persons
+        filteredPersons={filteredPersons}
+        onDelete={handlePersonDelete}
+      />
     </div>
   );
 };
