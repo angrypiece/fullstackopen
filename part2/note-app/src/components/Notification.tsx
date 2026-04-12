@@ -1,5 +1,7 @@
+import type { ErrorMessage } from "../types";
+
 interface NotificationProps {
-  message: string;
+  message: ErrorMessage;
 }
 
 const Notification = ({ message }: NotificationProps) => {

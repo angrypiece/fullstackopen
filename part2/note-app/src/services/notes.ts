@@ -3,7 +3,12 @@ import type { NewNote, NoteType } from "../types";
 const baseUrl = "http://localhost:3001/notes";
 
 const getAll = () => {
-  return axios.get(baseUrl).then((res) => res.data);
+  const nonExisting: NoteType = {
+    id: "10000",
+    content: "This note is not saved to server",
+    important: true,
+  };
+  return axios.get(baseUrl).then((res) => res.data.concat(nonExisting));
 };
 
 const create = (newNote: NewNote) => {
