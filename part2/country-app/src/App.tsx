@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
-import { baseUrl } from "./constants";
+import { countryAPIBaseURL, weatherAPIBaseURL } from "./constants";
+import { getCondition } from "./weatherConditions";
 
 type Languages = Record<string, string>;
+
 type Flags = {
   png?: string;
   svg?: string;
@@ -19,14 +21,34 @@ type Country = {
   flags: Flags;
 };
 
+type Weather = {
+  current: {
+    cloud: number;
+    condition: { text: string; icon: string; code: number };
+    wind_kph: number;
+    temp_c: number;
+  };
+};
+
 const App = () => {
   const [countries, setCountries] = useState<Country[]>([]);
   const [searchName, setSearchName] = useState("");
+  const [weatherData, setWeatherData] = useState<Weather | null>(null);
+
+  const filteredCountries = countries.filter((country) => {
+    return country.name.common
+      .toLowerCase()
+      .trim()
+      .includes(searchName.toLowerCase().trim());
+  });
+
+  const selectedCountry =
+    filteredCountries.length === 1 ? filteredCountries[0] : null;
 
   useEffect(() => {
     const startFetch = async () => {
       try {
-        const response = await fetch(baseUrl);
+        const response = await fetch(countryAPIBaseURL);
         const data: Country[] = await response.json();
         setCountries(data);
       } catch (err) {
@@ -39,19 +61,41 @@ const App = () => {
     startFetch();
   }, []);
 
-  const filteredCountries = countries.filter((country) => {
-    return country.name.common
-      .toLowerCase()
-      .trim()
-      .includes(searchName.toLowerCase().trim());
-  });
+  useEffect(() => {
+    if (!selectedCountry) return;
+
+    const fetchWeatherData = async () => {
+      try {
+        const apikey = import.meta.env.VITE_WEATHER_API_KEY;
+
+        const response = await fetch(
+          `${weatherAPIBaseURL}/current.json?key=${apikey}&q=${selectedCountry.capital}`,
+        );
+
+        if (!response.ok) throw new Error("Failed fetching weather");
+
+        const resData = (await response.json()) as Weather;
+        setWeatherData(resData);
+      } catch (error) {
+        if (error instanceof Error) {
+          console.error(error.message);
+        }
+      }
+    };
+
+    fetchWeatherData();
+  }, [selectedCountry]);
 
   const oneCountry = (country: Country) => {
+    const condition = weatherData
+      ? getCondition(weatherData.current.condition.code)
+      : undefined;
+
     return (
       <>
         <h1>{country.name.common}</h1>
         {country.capital.map((cap) => (
-          <p>{cap}</p>
+          <p key={cap}>{cap}</p>
         ))}
         <p>Area {country.area}</p>
         <h2>Languages</h2>
@@ -60,7 +104,20 @@ const App = () => {
             <li key={code}>{lang}</li>
           ))}
         </ul>
-        <img src={country.flags.png} alt={country.flags.svg} />
+        <img src={country.flags.png} alt={country.flags.alt} />
+        <h1>Weahter in {country.capital}</h1>
+        {weatherData ? (
+          <>
+            <p>Temperature {weatherData?.current.temp_c} °C</p>
+            <img
+              src={`https:${weatherData?.current.condition.icon}`}
+              alt={condition?.day}
+            />
+            <p>Wind {weatherData?.current.wind_kph} km/h</p>
+          </>
+        ) : (
+          <p>Loading weather...</p>
+        )}
       </>
     );
   };
@@ -80,7 +137,14 @@ const App = () => {
       {filteredCountries.length <= 10 && filteredCountries.length > 1 && (
         <ul>
           {filteredCountries.map((country) => {
-            return <li key={country.name.common}>{country.name.common}</li>;
+            return (
+              <li key={country.name.common}>
+                {country.name.common}{" "}
+                <button onClick={() => setSearchName(country.name.common)}>
+                  show
+                </button>
+              </li>
+            );
           })}
         </ul>
       )}
