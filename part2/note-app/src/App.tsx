@@ -3,6 +3,7 @@ import Note from "./components/Note";
 import type { ErrorMessage, NewNote, NoteType } from "./types";
 import noteService from "./services/notes.js";
 import Notification from "./components/Notification.js";
+import Footer from "./components/Footer.js";
 
 const App = () => {
   const [notes, setNotes] = useState<NoteType[]>([]);
@@ -87,6 +88,7 @@ const App = () => {
         <input type="text" value={newNote} onChange={handleNoteChange} />
         <button type="submit">save</button>
       </form>
+      <Footer />
     </div>
   );
 };
