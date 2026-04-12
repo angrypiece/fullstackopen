@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
 import Filter from "./components/Filter";
-import type { NewPerson, Person } from "./types";
+import { type NotificationMessage, type NewPerson, type Person } from "./types";
 import PersonForm from "./components/PersonForm";
 import Persons from "./components/Persons";
 import personService from "./services/persons";
+import Notification from "./components/Notification";
 
 const App = () => {
   const [persons, setPersons] = useState<Person[]>([]);
@@ -12,6 +13,8 @@ const App = () => {
     number: "",
   });
   const [filter, setFilter] = useState("");
+  const [notificationMessage, setNotificationMessage] =
+    useState<NotificationMessage | null>(null);
 
   useEffect(() => {
     personService.getAll().then((persons) => {
@@ -34,6 +37,7 @@ const App = () => {
       );
       if (isConfirmed) {
         updatePerson(foundPerson);
+        displayNotification(foundPerson);
         return;
       }
     }
@@ -45,6 +49,7 @@ const App = () => {
 
     personService.addNew(newPersonObject).then((addedPerson) => {
       setPersons((prev) => prev.concat(addedPerson));
+      displayNotification(addedPerson);
       setNewPerson({ name: "", number: "" });
     });
   };
@@ -74,16 +79,42 @@ const App = () => {
   };
 
   const handlePersonDelete = (id: string) => {
-    const person = persons.find((p) => p.id === id);
-    if (!person) return;
-    const confirm = window.confirm(`Delete ${person.name})`);
-    if (confirm && person) {
-      personService.remove(person.id).then((deletedPerson: Person) => {
-        setPersons(
-          persons.filter((oldPerson) => oldPerson.id !== deletedPerson.id),
-        );
+    const personToDelete = persons.find((p) => p.id === id);
+    if (!personToDelete) return;
+    const confirm = window.confirm(`Delete ${personToDelete.name})`);
+    if (confirm && personToDelete) {
+      personService
+        .remove(personToDelete.id)
+        .then((deletedPerson: Person) => {
+          setPersons(
+            persons.filter((oldPerson) => oldPerson.id !== deletedPerson.id),
+          );
+        })
+        .catch((error) => {
+          if (error instanceof Error) {
+            displayNotification(personToDelete, true);
+            setPersons(
+              persons.filter((person) => person.id !== personToDelete.id),
+            );
+          }
+        });
+    }
+  };
+
+  const displayNotification = (person: Person, error = false) => {
+    if (error) {
+      setNotificationMessage({
+        message: `Information of "${person.name}" has already been removed from server`,
+        error: true,
+      });
+    } else {
+      setNotificationMessage({
+        message: `Person "${person.name}" was added or updated`,
       });
     }
+    setTimeout(() => {
+      setNotificationMessage({ message: "" });
+    }, 5000);
   };
 
   const filteredPersons = persons.filter((person) =>
@@ -92,6 +123,7 @@ const App = () => {
 
   return (
     <div>
+      <Notification notification={notificationMessage} />
       <h2>Phonebook</h2>
       <Filter filter={filter} onChange={(e) => setFilter(e.target.value)} />
 

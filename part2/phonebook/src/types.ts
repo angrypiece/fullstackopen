@@ -5,3 +5,8 @@ export interface Person {
 }
 
 export type NewPerson = Omit<Person, "id">;
+
+export interface NotificationMessage {
+  message: string;
+  error?: boolean;
+}
