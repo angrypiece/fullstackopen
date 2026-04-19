@@ -1,0 +1,13 @@
+.notification {
+  border: 2px solid rgb(54, 228, 54);
+  border-radius: 5px;
+  background-color: grey;
+  color: rgb(54, 228, 54);
+  font-size: 25px;
+  padding: 20px;
+}
+
+.error {
+  color: red;
+  border: 2px solid red;
+}
