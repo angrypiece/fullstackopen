@@ -1,7 +1,18 @@
 const express = require("express");
 const app = express();
+const morgan = require("morgan");
 
 app.use(express.json());
+
+morgan.token("body", (req) => {
+  return JSON.stringify(req.body);
+});
+
+app.use(
+  morgan(
+    ":method :url :status :res[content-length] bytes :response-time ms :body",
+  ),
+);
 
 app.get("/info", (req, res) => {
   const phoneBookLength = persons.length;
