@@ -1,5 +1,6 @@
 const express = require("express");
 const app = express();
+const { unknownEndpoint } = require("./middlewares");
 
 app.use(express.json());
 
@@ -72,6 +73,8 @@ app.post("/api/notes", (req, res) => {
 
   res.json(note);
 });
+
+app.use(unknownEndpoint);
 
 const PORT = 3001;
 app.listen(PORT, () => {
