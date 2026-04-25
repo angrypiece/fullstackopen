@@ -1,10 +1,11 @@
-import type { NotificationMessage } from "../types";
+import type { NotificationMessage } from "../../../shared/types";
 
 interface NotificationProps {
   notification: NotificationMessage | null;
 }
 
 const Notification = ({ notification }: NotificationProps) => {
+  console.log(notification)
   if (!notification?.message) return null;
 
   return (

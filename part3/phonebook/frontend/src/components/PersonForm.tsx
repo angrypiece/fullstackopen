@@ -1,10 +1,10 @@
 import type React from "react";
-import type { NewPerson } from "../types";
+import type { NewPersonType } from "../../../shared/types";
 
 interface PersonFormProps {
   onSubmit: (e: React.SubmitEvent<HTMLFormElement>) => void;
   onChange: (e: React.ChangeEvent<HTMLInputElement, Element>) => void;
-  newPerson: NewPerson;
+  newPerson: NewPersonType;
 }
 
 const PersonForm = ({

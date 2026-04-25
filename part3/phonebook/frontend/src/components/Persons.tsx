@@ -1,7 +1,7 @@
-import type { Person } from "../types";
+import type { PersonType } from "../../../shared/types";
 
 interface PersonsProps {
-  filteredPersons: Person[];
+  filteredPersons: PersonType[];
   onDelete: (id: string) => void;
 }
 

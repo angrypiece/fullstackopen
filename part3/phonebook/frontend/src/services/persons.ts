@@ -1,12 +1,12 @@
 import axios from "axios";
-import type { NewPerson, Person } from "../types";
-const baseUrl = "http://localhost:3001/persons";
+import type { NewPersonType, PersonType } from "../../../shared/types";
+const baseUrl = "/api/persons";
 
-const getAll = (): Promise<Person[]> => {
+const getAll = (): Promise<PersonType[]> => {
   return axios.get(baseUrl).then((res) => res.data);
 };
 
-const addNew = (newPerson: NewPerson) => {
+const addNew = (newPerson: NewPersonType) => {
   return axios.post(baseUrl, newPerson).then((res) => res.data);
 };
 
@@ -14,7 +14,7 @@ const remove = (id: string) => {
   return axios.delete(`${baseUrl}/${id}`).then((res) => res.data);
 };
 
-const update = (personToUpdate: Person) => {
+const update = (personToUpdate: PersonType) => {
   const id = personToUpdate.id
   return axios.put(`${baseUrl}/${id}`, personToUpdate).then((res) => res.data);
 };

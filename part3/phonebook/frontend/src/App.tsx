@@ -1,14 +1,18 @@
 import React, { useEffect, useState } from "react";
 import Filter from "./components/Filter";
-import { type NotificationMessage, type NewPerson, type Person } from "./types";
+import {
+  type NotificationMessage,
+  type NewPersonType,
+  type PersonType,
+} from "../../shared/types";
 import PersonForm from "./components/PersonForm";
 import Persons from "./components/Persons";
 import personService from "./services/persons";
 import Notification from "./components/Notification";
 
 const App = () => {
-  const [persons, setPersons] = useState<Person[]>([]);
-  const [newPerson, setNewPerson] = useState<NewPerson>({
+  const [persons, setPersons] = useState<PersonType[]>([]);
+  const [newPerson, setNewPerson] = useState<NewPersonType>({
     name: "",
     number: "",
   });
@@ -25,21 +29,20 @@ const App = () => {
   const addPerson = (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    const foundPerson = persons.find(
+    const existingPerson = persons.find(
       (persons) =>
         persons.name.trim().toLowerCase() ===
         newPerson.name.trim().toLowerCase(),
     );
 
-    if (foundPerson) {
-      const isConfirmed = confirm(
-        `${foundPerson.name} already exists in phonebook! Do you want to update`,
-      );
-      if (isConfirmed) {
-        updatePerson(foundPerson);
-        displayNotification(foundPerson);
-        return;
-      }
+    if (
+      existingPerson &&
+      confirm(
+        `${existingPerson.name} already exists in phonebook. Do you want to update?`,
+      )
+    ) {
+      updatePerson(existingPerson);
+      return;
     }
 
     const newPersonObject = {
@@ -47,52 +50,66 @@ const App = () => {
       number: newPerson.number,
     };
 
-    personService.addNew(newPersonObject).then((addedPerson) => {
-      setPersons((prev) => prev.concat(addedPerson));
-      displayNotification(addedPerson);
-      setNewPerson({ name: "", number: "" });
-    });
+    personService
+      .addNew(newPersonObject)
+      .then((addedPerson) => {
+        setPersons((prev) => prev.concat(addedPerson));
+        displayNotification(`${addedPerson.name} added`);
+        setNewPerson({ name: "", number: "" });
+      })
+      .catch((error: unknown) => {
+        // @ts-expect-error
+        displayNotification(error.response.data.error, true);
+      });
   };
 
-  const updatePerson = (personToUpdate: Person) => {
+  const updatePerson = (personToUpdate: PersonType) => {
     const updatedPersonObject = { ...personToUpdate, number: newPerson.number };
 
-    personService.update(updatedPersonObject).then((updatedPerson: Person) => {
-      setPersons(
-        persons.map((person) => {
-          if (person.id === updatedPerson.id) {
-            return updatedPerson;
-          } else {
-            return person;
-          }
-        }),
-      );
-      setNewPerson({ name: "", number: "" });
-    });
+    personService
+      .update(updatedPersonObject)
+      .then((updatedPerson: PersonType) => {
+        console.log(updatedPerson)
+        setPersons(
+          persons.map((person) => {
+            if (person.id === updatedPerson.id) {
+              return updatedPerson;
+            } else {
+              return person;
+            }
+          }),
+        );
+        setNewPerson({ name: "", number: "" });
+        displayNotification(`${updatePerson.name} has been updated`);
+      });
   };
 
   const handlePersonChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     if (name === "name" || name === "number") {
-      setNewPerson((prev: NewPerson) => ({ ...prev, [name]: value }));
+      setNewPerson((prev: NewPersonType) => ({ ...prev, [name]: value }));
     }
   };
 
   const handlePersonDelete = (id: string) => {
     const personToDelete = persons.find((p) => p.id === id);
+
     if (!personToDelete) return;
-    const confirm = window.confirm(`Delete ${personToDelete.name})`);
-    if (confirm && personToDelete) {
+
+    if (window.confirm(`Delete ${personToDelete.name}?`) && personToDelete) {
       personService
         .remove(personToDelete.id)
-        .then((deletedPerson: Person) => {
+        .then(() => {
           setPersons(
-            persons.filter((oldPerson) => oldPerson.id !== deletedPerson.id),
+            persons.filter((oldPerson) => oldPerson.id !== personToDelete.id),
           );
         })
-        .catch((error) => {
+        .catch((error: unknown) => {
           if (error instanceof Error) {
-            displayNotification(personToDelete, true);
+            displayNotification(
+              `${personToDelete.name} has already been deleted from server`,
+              true,
+            );
             setPersons(
               persons.filter((person) => person.id !== personToDelete.id),
             );
@@ -101,16 +118,14 @@ const App = () => {
     }
   };
 
-  const displayNotification = (person: Person, error = false) => {
+  const displayNotification = (message: string, error = false) => {
     if (error) {
       setNotificationMessage({
-        message: `Information of "${person.name}" has already been removed from server`,
-        error: true,
+        error,
+        message,
       });
     } else {
-      setNotificationMessage({
-        message: `Person "${person.name}" was added or updated`,
-      });
+      setNotificationMessage({ message, error });
     }
     setTimeout(() => {
       setNotificationMessage({ message: "" });

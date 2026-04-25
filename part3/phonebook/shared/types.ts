@@ -1,10 +1,10 @@
-export interface Person {
+export interface PersonType {
   name: string;
   id: string;
   number: string;
 }
 
-export type NewPerson = Omit<Person, "id">;
+export type NewPersonType = Omit<PersonType, "id">;
 
 export interface NotificationMessage {
   message: string;
