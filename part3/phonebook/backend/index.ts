@@ -2,9 +2,9 @@ import "dotenv/config";
 import express, { type Request } from "express";
 const app = express();
 import morgan from "morgan";
-import { errorHandler, unknownEndpoint } from "./middleware/index";
-import type { PersonType } from "../../shared/types";
-import Person from "./modules/person";
+import { errorHandler, unknownEndpoint } from "./src/middleware/index";
+import type { PersonType } from "../shared/types";
+import Person from "./src/modules/person";
 
 app.use(express.static("dist"));
 app.use(express.json());
@@ -42,7 +42,7 @@ app.get("/api/persons/:id", async (req, res) => {
 app.delete("/api/persons/:id", async (req, res, next) => {
   try {
     const id = req.params.id;
-    const person = await Person.deleteOne({ _id: id });
+    await Person.deleteOne({ _id: id });
     res.status(204).end();
   } catch (error: unknown) {
     if (error instanceof Error) {
@@ -87,7 +87,7 @@ app.put("/api/persons/:id", async (req, res) => {
     { name, number },
     { runValidators: true },
   );
-  console.log(updatedPerson)
+  console.log(updatedPerson);
   res.json(updatedPerson);
 });
 
