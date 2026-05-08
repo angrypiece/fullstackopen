@@ -121,7 +121,7 @@ describe("blogs", () => {
       assert.deepEqual(result, expection);
     });
 
-    test.only("when list has many blogs, equal to most blogging author with aumount of blogs created", () => {
+    test("when list has many blogs, equal to most blogging author with aumount of blogs created", () => {
       const result = listHelper.mostBlogs(blogs);
       const expection = { author: "Robert C. Martin", blogs: 3 };
       assert.deepEqual(result, expection);
