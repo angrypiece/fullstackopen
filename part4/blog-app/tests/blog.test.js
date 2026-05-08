@@ -114,7 +114,7 @@ describe("blogs", () => {
     });
   });
 
-  describe("most blogs author", () => {cl
+  describe("most blogs author", () => {
     test("when list has only one blog, equal to that author with blog amount 1", () => {
       const result = listHelper.mostBlogs(listWithOneBlog);
       const expection = { author: "Edsger W. Dijkstra", blogs: 1 };
